@@ -1,0 +1,213 @@
+{
+  "entities": {
+    "QuotationRequest": {
+      "title": "Quotation Request",
+      "description": "Institutional price and layout quotation inquiry submitted by schools or bulk buyers.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique quotation reference ID.",
+          "maxLength": 64
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Name of the school contact person or procurement official.",
+          "maxLength": 128
+        },
+        "institutionName": {
+          "type": "string",
+          "description": "Name of the school, college, or educational institution.",
+          "maxLength": 128
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone or WhatsApp number.",
+          "maxLength": 32
+        },
+        "email": {
+          "type": "string",
+          "description": "Contact email address.",
+          "maxLength": 128
+        },
+        "productCategory": {
+          "type": "string",
+          "description": "Selected category of school furniture.",
+          "maxLength": 64
+        },
+        "preferredProduct": {
+          "type": "string",
+          "description": "Specific product model or project requirements.",
+          "maxLength": 128
+        },
+        "requestedQuantity": {
+          "type": "number",
+          "description": "Approximate number of units required."
+        },
+        "deliveryCity": {
+          "type": "string",
+          "description": "City of campus delivery in Pakistan.",
+          "maxLength": 64
+        },
+        "customDimensions": {
+          "type": "string",
+          "description": "Custom desktop measurements or grade level adjustments.",
+          "maxLength": 256
+        },
+        "materialPreference": {
+          "type": "string",
+          "description": "Preferred steel gauge, powder coat color, or wood laminate finish.",
+          "maxLength": 256
+        },
+        "additionalRequirements": {
+          "type": "string",
+          "description": "Special specifications or installation deadlines.",
+          "maxLength": 1000
+        },
+        "status": {
+          "type": "string",
+          "description": "Current processing state of the quotation.",
+          "enum": ["pending", "reviewing", "quoted", "archived"]
+        },
+        "userId": {
+          "type": "string",
+          "description": "UID of the submitting user if authenticated.",
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp in ISO or server time.",
+          "maxLength": 64
+        }
+      },
+      "required": ["customerName", "institutionName", "phone", "productCategory", "status"]
+    },
+    "ContactMessage": {
+      "title": "Contact Message",
+      "description": "General customer inquiry message from the contact page.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full name of the sender.",
+          "maxLength": 128
+        },
+        "institution": {
+          "type": "string",
+          "description": "School or institution name.",
+          "maxLength": 128
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number.",
+          "maxLength": 32
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address.",
+          "maxLength": 128
+        },
+        "subject": {
+          "type": "string",
+          "description": "Topic of inquiry.",
+          "maxLength": 128
+        },
+        "message": {
+          "type": "string",
+          "description": "Message content.",
+          "maxLength": 2000
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Submission timestamp.",
+          "maxLength": 64
+        }
+      },
+      "required": ["name", "phone", "message"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Authenticated user profile for customer accounts.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID.",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address.",
+          "maxLength": 128
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name.",
+          "maxLength": 128
+        },
+        "institution": {
+          "type": "string",
+          "description": "School, academy, university or corporate institution.",
+          "maxLength": 128
+        },
+        "phone": {
+          "type": "string",
+          "description": "Direct contact phone or WhatsApp number.",
+          "maxLength": 32
+        },
+        "city": {
+          "type": "string",
+          "description": "City of campus / branch.",
+          "maxLength": 64
+        },
+        "address": {
+          "type": "string",
+          "description": "Campus delivery address.",
+          "maxLength": 256
+        },
+        "accountMode": {
+          "type": "string",
+          "description": "Account mode (classic, new_customer_accounts, or institutional).",
+          "maxLength": 64
+        },
+        "role": {
+          "type": "string",
+          "description": "User role.",
+          "enum": ["customer", "admin"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Account creation time.",
+          "maxLength": 64
+        }
+      },
+      "required": ["userId", "email"]
+    }
+  },
+  "firestore": {
+    "/quotations/{quotationId}": {
+      "schema": {
+        "$ref": "#/entities/QuotationRequest"
+      },
+      "description": "Institutional quotation requests submitted via website forms."
+    },
+    "/messages/{messageId}": {
+      "schema": {
+        "$ref": "#/entities/ContactMessage"
+      },
+      "description": "Contact inquiries from institutional representatives."
+    },
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Customer and institutional accounts."
+    },
+    "/admins/{adminId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Authorized administrators."
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Decent School Furniture",
+  "description": "Premium e-commerce storefront & Shopify Online Store 2.0 theme for school furniture, classroom desks, and bulk institutional quotations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

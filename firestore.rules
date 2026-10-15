@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ==========================================
+    // REUSABLE HELPER FUNCTIONS
+    // ==========================================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'aanothing01@gmail.com' ||
+        request.auth.token.email == 'xghost1704@gmail.com'
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidQuotation(data) {
+      return data.customerName is string && data.customerName.size() > 0 && data.customerName.size() <= 128 &&
+             data.institutionName is string && data.institutionName.size() > 0 && data.institutionName.size() <= 128 &&
+             data.phone is string && data.phone.size() > 0 && data.phone.size() <= 32 &&
+             data.productCategory is string && data.productCategory.size() > 0 && data.productCategory.size() <= 64 &&
+             data.status in ['pending', 'reviewing', 'quoted', 'archived'] &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 128)) &&
+             (!('preferredProduct' in data) || (data.preferredProduct is string && data.preferredProduct.size() <= 128)) &&
+             (!('deliveryCity' in data) || (data.deliveryCity is string && data.deliveryCity.size() <= 64)) &&
+             (!('customDimensions' in data) || (data.customDimensions is string && data.customDimensions.size() <= 256)) &&
+             (!('materialPreference' in data) || (data.materialPreference is string && data.materialPreference.size() <= 256)) &&
+             (!('additionalRequirements' in data) || (data.additionalRequirements is string && data.additionalRequirements.size() <= 1000));
+    }
+
+    function isValidMessage(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 128 &&
+             data.phone is string && data.phone.size() > 0 && data.phone.size() <= 32 &&
+             data.message is string && data.message.size() > 0 && data.message.size() <= 2000 &&
+             (!('institution' in data) || (data.institution is string && data.institution.size() <= 128)) &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 128)) &&
+             (!('subject' in data) || (data.subject is string && data.subject.size() <= 128));
+    }
+
+    function isValidUser(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.email is string && data.email.size() > 0 && data.email.size() <= 128 &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 128)) &&
+             (!('firstName' in data) || (data.firstName is string && data.firstName.size() <= 128)) &&
+             (!('lastName' in data) || (data.lastName is string && data.lastName.size() <= 128)) &&
+             (!('institution' in data) || (data.institution is string && data.institution.size() <= 128)) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 32)) &&
+             (!('city' in data) || (data.city is string && data.city.size() <= 64)) &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 256)) &&
+             (!('accountMode' in data) || (data.accountMode is string && data.accountMode.size() <= 64)) &&
+             (!('role' in data) || data.role in ['customer', 'admin']);
+    }
+
+    // ==========================================
+    // QUOTATION REQUESTS
+    // ==========================================
+    match /quotations/{quotationId} {
+      allow create: if isValidId(quotationId) && isValidQuotation(request.resource.data);
+      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow list: if isAdmin() || isSignedIn();
+      allow update: if isValidId(quotationId) && isValidQuotation(request.resource.data) && (
+        isAdmin() ||
+        (isSignedIn() && resource.data.userId == request.auth.uid && resource.data.status == 'pending')
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // CONTACT MESSAGES
+    // ==========================================
+    match /messages/{messageId} {
+      allow create: if isValidId(messageId) && isValidMessage(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // USERS COLLECTION
+    // ==========================================
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(userId) && isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isValidId(userId) && (
+        (isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'firstName', 'lastName', 'institution', 'phone', 'city', 'address', 'accountMode'])) ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // ADMINS COLLECTION
+    // ==========================================
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

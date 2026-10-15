@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        function isIgnoredExtensionError(err) {
+          if (!err) return false;
+          var msg = String(err.message || err).toLowerCase();
+          var stack = String(err.stack || '').toLowerCase();
+          return (
+            msg.indexOf('metamask') !== -1 ||
+            msg.indexOf('failed to connect') !== -1 ||
+            msg.indexOf('unauthorized-domain') !== -1 ||
+            stack.indexOf('chrome-extension://') !== -1 ||
+            stack.indexOf('inpage.js') !== -1
+          );
+        }
+        window.addEventListener('unhandledrejection', function(event) {
+          if (isIgnoredExtensionError(event.reason)) {
+            event.preventDefault();
+            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+        window.addEventListener('error', function(event) {
+          var err = event.error;
+          var msg = event.message || '';
+          var fn = event.filename || '';
+          if (
+            isIgnoredExtensionError(err) ||
+            isIgnoredExtensionError(msg) ||
+            fn.indexOf('chrome-extension://') !== -1 ||
+            fn.indexOf('inpage.js') !== -1
+          ) {
+            event.preventDefault();
+            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+      })();
+    </script>
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages URL decode
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&');
+          }).join('?');
+          window.history.replaceState(null, null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location));
+    </script>
+    <title>Decent School Furniture - Quality Furniture. Better Learning.</title>
+    <meta name="description" content="Premium school, college, and educational institutional furniture. Durable student desks, chairs, classroom benches, teacher tables, lab workstations, and custom bulk quotation orders." />
+    <meta property="og:title" content="Decent School Furniture - Quality Furniture. Better Learning." />
+    <meta property="og:description" content="Durable, ergonomic school furniture for classrooms, libraries, computer labs, and educational institutions." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#F7F9FC] text-[#243B53] antialiased selection:bg-[#F59E0B] selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
